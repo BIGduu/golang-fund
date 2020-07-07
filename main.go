@@ -23,28 +23,26 @@ func main() {
 		value.Data.List = value.Data.Filter(isAdd)
 	}
 	list := value.Data.List
-	var mongodbURI = "mongodb://localhost:27017"
+	now := time.Now()
+	toDay := now.Format("2006-01-02 15:04:05")
 
+	var mongodbURI = "mongodb://localhost:27017"
 	client, err := mongo.NewClient(options.Client().ApplyURI(mongodbURI))
 	ctx, _ := context.WithTimeout(context.Background(), time.Second*5)
+
 	if err != nil {
 		println(err)
 		panic(err)
 	}
 	_ = client.Connect(ctx)
-	now := time.Now()
-	toDay := now.Format("2006-01-02 15:04:05")
 	collection := client.Database("fund").Collection("isadd" + toDay)
+
 	_, err = collection.InsertMany(ctx, toInterface(list))
 	if err != nil {
 		fmt.Println("1" + err.Error())
 	}
-	_, err = collection.InsertMany(ctx, toInterface(list))
-	if err != nil {
-		fmt.Println("2" + err.Error())
-	}
 	fmt.Println("执行完毕")
-	client.Disconnect(ctx)
+	defer client.Disconnect(ctx)
 }
 
 func toInterface(array interface{}) []interface{} {
