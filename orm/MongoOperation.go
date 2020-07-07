@@ -15,7 +15,3 @@ func (this *MongoOperation) GetInstant() *MongoOperation {
 	})
 	return instant
 }
-
-func (this *MongoOperation) findOne() interface{} {
-
-}

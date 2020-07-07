@@ -10,28 +10,28 @@ import (
 const JZFundURL = "http://api.fund.eastmoney.com/FundGuZhi/GetFundGZList?type=1&sort=3&orderType=desc&canbuy=1&pageIndex=1&pageSize=20000&callback=jQuery183045152404206471175_1593332615849&_=1593332692698"
 
 type JZFund struct {
+	Bzdm        string      `json:"bzdm" bson:"_id"`
+	Jjjc        string      `json:"jjjc" bson:"funName"` //基金名字
+	Gszzl       string      `json:"gszzl"`               //估算净值
+	Gsz         string      `json:"gsz"`                 //估算值
+	Gxrq        string      `json:"gxrq"`                //估算日期
+	Gzrq        string      `json:"gzrq"`                //估值日期
+	Isbuy       string      `json:"isbuy"`               //是否能买
+	Jjgsid      string      `json:"JJGSID"`              //基金编号
 	Discount    float32     `json:"Discount"`
 	FScaleType  string      `json:"FScaleType"`
 	FType       string      `json:"FType"`
 	IsExchg     string      `json:"IsExchg"`
 	IsListTrade string      `json:"IsListTrade"`
-	Jjgsid      string      `json:"JJGSID"` //基金编号
 	ListTexch   string      `json:"ListTexch"`
 	PLevel      float32     `json:"PLevel"`
 	Rate        string      `json:"Rate"`
-	Bzdm        string      `json:"bzdm"`
 	Dwjz        string      `json:"dwjz"`
 	Feature     string      `json:"feature"`
 	Fundtype    string      `json:"fundtype"`
 	Gbdwjz      string      `json:"gbdwjz"`
 	Gspc        string      `json:"gspc"`
-	Gsz         string      `json:"gsz"`   //估算值
-	Gszzl       string      `json:"gszzl"` //估算净值
 	Gszzlcolor  string      `json:"gszzlcolor"`
-	Gxrq        string      `json:"gxrq"`  //估算日期
-	Gzrq        string      `json:"gzrq"`  //估值日期
-	Isbuy       string      `json:"isbuy"` //是否能买
-	Jjjc        string      `json:"jjjc"`  //基金名字
 	Jjjcpy      string      `json:"jjjcpy"`
 	Jjlx        interface{} `json:"jjlx"`
 	Jjlx2       interface{} `json:"jjlx2"`
@@ -41,8 +41,6 @@ type JZFund struct {
 	Sgzt        string      `json:"sgzt"`
 	Shzt        interface{} `json:"shzt"`
 }
-
-
 
 type JZBody struct {
 	Canbuy   string   `json:"canbuy"`
@@ -54,14 +52,15 @@ type JZBody struct {
 	TypeStr  string   `json:"typeStr"`
 }
 
-func (this *JZBody) Filter(fun func(fund JZFund) bool){
+func (this *JZBody) Filter(fun func(fund JZFund) bool) []JZFund {
+	jzFunds := make([]JZFund, 0, 10)
 	list := this.List
-	for index, jzFund := range list {
+	for _, jzFund := range list {
 		if fun(jzFund) {
-			list = append(list[:index], list[index+1:]...)
+			jzFunds = append(jzFunds, jzFund)
 		}
 	}
-	this.List = list
+	return jzFunds
 }
 
 type JZResponse struct {
@@ -88,7 +87,7 @@ func (this *JZResponse) ToJson(responseBody string) {
 func (this *JZResponse) NewJZResponse(sync chan JZResponse) {
 	utils := httputils.HttpUtils{}
 	request := utils.NewRequest(httputils.GET, JZFundURL, "")
-	request.AddHeader("Referer","http://fund.eastmoney.com/fundguzhi.html")
+	request.AddHeader("Referer", "http://fund.eastmoney.com/fundguzhi.html")
 	response := request.DoRequest()
 	body := request.ReadResponseBody(response)
 	this.ToJson(body)

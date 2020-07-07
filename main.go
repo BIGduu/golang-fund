@@ -20,7 +20,7 @@ func main() {
 	go jzResponse.NewJZResponse(responses)
 	value, ok := <-responses
 	if ok {
-		value.Data.Filter(isAdd)
+		value.Data.List = value.Data.Filter(isAdd)
 	}
 	list := value.Data.List
 	var mongodbURI = "mongodb://localhost:27017"
@@ -32,7 +32,9 @@ func main() {
 		panic(err)
 	}
 	_ = client.Connect(ctx)
-	collection := client.Database("fund").Collection("fund")
+	now := time.Now()
+	toDay := now.Format("2006-01-02 15:04:05")
+	collection := client.Database("fund").Collection("isadd" + toDay)
 	_, err = collection.InsertMany(ctx, toInterface(list))
 	if err != nil {
 		fmt.Println("1" + err.Error())
@@ -58,8 +60,21 @@ func toInterface(array interface{}) []interface{} {
 }
 
 func isAdd(fund entity.JZFund) bool {
+	if fund.Gszzl == "---" {
+		return false
+	}
 	if strings.Contains(fund.Gszzl, "-") {
 		return false
 	}
 	return true
+}
+
+func isNotAdd(fund entity.JZFund) bool {
+	if fund.Gszzl == "---" {
+		return false
+	}
+	if strings.Contains(fund.Gszzl, "-") {
+		return true
+	}
+	return false
 }
